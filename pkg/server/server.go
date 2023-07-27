@@ -26,6 +26,7 @@ func Serve(cfg *ini.File) {
 	}
 	router.HandleFunc("/api/ping", s.IsAlive)
 	router.HandleFunc("/api/q/composers", s.ListComposers)
+	router.HandleFunc("/api/new/composer", s.NewComposer).Methods("POST")
 	addr := strings.Join([]string{"127.0.0.1", cfg.Section("").Key("port").String()}, ":")
 	srv := &http.Server{
 		Handler:      router,

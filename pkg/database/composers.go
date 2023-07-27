@@ -2,16 +2,18 @@ package database
 
 import (
 	"database/sql"
+	"fmt"
+	"log"
 
 	"gopkg.in/ini.v1"
 )
 
 type Composer struct {
-	id            int    `json:"id"`
-	composer_name string `json:"name"`
-	description   string `json:"description"`
-	birth         int    `json:"birth"`
-	death         int    `json:"death"`
+	Id            int    `json:"id"`
+	Composer_name string `json:"name"`
+	Description   string `json:"desc"`
+	Birth         int    `json:"birth"`
+	Death         int    `json:"death"`
 }
 
 func ListComposers(SqlCfg *ini.Section) ([]Composer, error) {
@@ -35,12 +37,29 @@ func ListComposers(SqlCfg *ini.Section) ([]Composer, error) {
 			return nil, err
 		}
 		composers = append(composers, Composer{
-			id:            id,
-			composer_name: name,
-			description:   description,
-			birth:         birth,
-			death:         death,
+			Id:            id,
+			Composer_name: name,
+			Description:   description,
+			Birth:         birth,
+			Death:         death,
 		})
 	}
 	return composers, nil
+}
+
+func NewComposer(SqlCfg *ini.Section, composer *Composer) error {
+	db, err := sql.Open("postgres", SqlCfg.Key("URI").String())
+	if err != nil {
+		log.Println("hallo")
+		return err
+	}
+	cmd := fmt.Sprintf("INSERT INTO composers (composer_name, description, birth, death) VALUES ('%s', '%s', '%d', '%d');",
+		composer.Composer_name, composer.Description, composer.Birth, composer.Death)
+
+	_, err = db.Exec(cmd)
+	if err != nil {
+		log.Println("Bonjour")
+		return err
+	}
+	return nil
 }

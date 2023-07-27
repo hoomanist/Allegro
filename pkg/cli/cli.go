@@ -52,7 +52,7 @@ func (mc *MigrateCommand) Name() string {
 }
 func (mc *MigrateCommand) Run() error {
 	c := Configure(mc.config)
-	return database.Migrate(c.Section("DB"))
+	return database.Migrate(c.Section("database"))
 }
 func (mc *MigrateCommand) Init(args []string) error {
 	return mc.fs.Parse(args)
