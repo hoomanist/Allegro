@@ -1,26 +1,21 @@
 package database
 
 import (
-	"database/sql"
 	"log"
 
 	"github.com/golang-migrate/migrate/v4"
-	"github.com/golang-migrate/migrate/v4/database/postgres"
+	_ "github.com/golang-migrate/migrate/v4/database/postgres"
+	_ "github.com/golang-migrate/migrate/v4/source/file"
 	"gopkg.in/ini.v1"
 )
 
 func Migrate(SqlCfg *ini.Section) error {
-	db, err := sql.Open("postgres", SqlCfg.Key("URI").String())
-	if err != nil {
-		log.Fatal("can't connect to database")
-	}
-	driver, _ := postgres.WithInstance(db, &postgres.Config{})
-	m, err := migrate.NewWithDatabaseInstance(
+	m, err := migrate.New(
 		SqlCfg.Key("migrations").String(),
-		"postgres", driver,
+		SqlCfg.Key("URI").String(),
 	)
 	if err != nil {
-		return err
+		log.Fatal(err)
 	}
 	return m.Up()
 }
