@@ -6,18 +6,10 @@ import (
 	"gopkg.in/ini.v1"
 )
 
-type Configuration struct {
-	Port string
-	DB   *ini.Section
-}
-
-func Configure(path string) *Configuration {
+func Configure(path string) *ini.File {
 	cfg, err := ini.Load(path)
 	if err != nil {
 		log.Fatal(err)
 	}
-	return &Configuration{
-		Port: cfg.Section("").Key("port").String(),
-		DB:   cfg.Section("database"),
-	}
+	return cfg
 }

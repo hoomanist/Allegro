@@ -52,7 +52,7 @@ func (mc *MigrateCommand) Name() string {
 }
 func (mc *MigrateCommand) Run() error {
 	c := Configure(mc.config)
-	return database.Migrate(c.DB)
+	return database.Migrate(c.Section("DB"))
 }
 func (mc *MigrateCommand) Init(args []string) error {
 	return mc.fs.Parse(args)
@@ -63,7 +63,7 @@ func (sc *ServeCommand) Name() string {
 }
 func (sc *ServeCommand) Run() error {
 	c := Configure(sc.config)
-	server.Serve(c.Port)
+	server.Serve(c)
 	return nil
 }
 func (sc *ServeCommand) Init(args []string) error {

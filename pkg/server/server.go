@@ -8,17 +8,25 @@ import (
 	"time"
 
 	"github.com/gorilla/mux"
+	"gopkg.in/ini.v1"
 )
 
-func IsAlive(w http.ResponseWriter, r *http.Request) {
-	log.Println(r.Header)
+type server struct {
+	SqlCfg *ini.Section
+}
+
+func (s *server) IsAlive(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(map[string]bool{"ok": true})
 }
 
-func Serve(port string) {
+func Serve(cfg *ini.File) {
 	router := mux.NewRouter()
-	router.HandleFunc("/api/ping", IsAlive)
-	addr := strings.Join([]string{"127.0.0.1", port}, ":")
+	s := server{
+		SqlCfg: cfg.Section("DB"),
+	}
+	router.HandleFunc("/api/ping", s.IsAlive)
+	router.HandleFunc("/api/q/composers", s.ListComposers)
+	addr := strings.Join([]string{"127.0.0.1", cfg.Section("").Key("port").String()}, ":")
 	srv := &http.Server{
 		Handler:      router,
 		Addr:         addr,
