@@ -27,11 +27,14 @@ func ListComposers(SqlCfg *ini.Section) ([]Composer, error) {
 	}
 	composers := []Composer{}
 	for rows.Next() {
-		var id int
-		var name string
-		var description string
-		var birth int
-		var death int
+		var (
+			id    int
+			birth int
+			death int
+
+			name        string
+			description string
+		)
 		err = rows.Scan(&id, &name, &description, &birth, &death)
 		if err != nil {
 			return nil, err

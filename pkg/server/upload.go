@@ -8,6 +8,8 @@ import (
 	"os"
 	"path/filepath"
 	"time"
+
+	"github.com/hoomanist/allegro-server/pkg/database"
 )
 
 const MAX_UPLOAD_SIZE = 120 * 1024 * 1024
@@ -15,14 +17,16 @@ const MAX_UPLOAD_SIZE = 120 * 1024 * 1024
 type Progress struct {
 	TotalSize int64
 	BytesRead int64
+	FileName  string
 }
 
 func (pr *Progress) Print() {
 	if pr.BytesRead == pr.TotalSize {
-		fmt.Println("Done!")
+		//ToDo: write this to a logging database
+		fmt.Printf("%s is Uploaded!", pr.FileName)
 		return
 	}
-	fmt.Println("File Upload in progress: %d\n", pr.BytesRead)
+	// fmt.Printf("File Upload in progress: %d\n", pr.BytesRead)
 }
 
 func (pr *Progress) Write(p []byte) (n int, err error) {
@@ -66,7 +70,9 @@ func (s *server) FileUpload(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
-		f, err := os.Create(fmt.Sprintf("./uploads/%d%s", time.Now().UnixNano(), filepath.Ext(fileHeader.Filename)))
+		t := time.Now()
+		fpath := fmt.Sprintf("./uploads/%d%s", t.UnixNano(), filepath.Ext(fileHeader.Filename))
+		f, err := os.Create(fpath)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
@@ -74,14 +80,25 @@ func (s *server) FileUpload(w http.ResponseWriter, r *http.Request) {
 		defer f.Close()
 		pr := &Progress{
 			TotalSize: fileHeader.Size,
+			FileName:  fpath,
 		}
 		_, err = io.Copy(f, io.TeeReader(file, pr))
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}
+		db_entry := &database.File{
+			Filepath:   fpath,
+			Uploadtime: t,
+		}
+		err = database.NewFile(s.SqlCfg, db_entry)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+		}
 		json.NewEncoder(w).Encode(map[string]string{
 			"status": "uploaded",
+			"path":   db_entry.Filepath,
+			"time":   t.String(),
 		})
 
 	}
