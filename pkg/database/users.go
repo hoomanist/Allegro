@@ -32,6 +32,21 @@ func NewUser(SqlCfg *ini.Section, user User) error {
 	return nil
 }
 
+func GetUser(SqlCfg *ini.Section, name string) (string, error) {
+	db, err := sql.Open("postgres", SqlCfg.Key("URI").String())
+	if err != nil {
+		log.Println(err)
+		return "", err
+	}
+	var password string
+	row := db.QueryRow("SELECT password FROM users WHERE name=$1", name)
+	err = row.Scan(&password)
+	if err != nil {
+		return "", err
+	}
+	return password, nil
+}
+
 // only exists for testing purposes
 func GetUsers(SqlCfg *ini.Section) ([]User, error) {
 	db, err := sql.Open("postgres", SqlCfg.Key("URI").String())

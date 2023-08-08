@@ -13,6 +13,7 @@ import (
 
 type server struct {
 	SqlCfg *ini.Section
+	Key    string
 }
 
 func (s *server) IsAlive(w http.ResponseWriter, r *http.Request) {
@@ -23,6 +24,7 @@ func Serve(cfg *ini.File) {
 	router := mux.NewRouter()
 	s := server{
 		SqlCfg: cfg.Section("DB"),
+		Key:    cfg.Section("").Key("encryption_key").String(),
 	}
 	router.HandleFunc("/api/ping", s.IsAlive)
 	router.HandleFunc("/api/q/composers", s.ListComposers)
@@ -30,6 +32,7 @@ func Serve(cfg *ini.File) {
 	router.HandleFunc("/upload", s.FileUpload).Methods("POST")
 	router.HandleFunc("/api/new/user", s.NewUser).Methods("POST")
 	router.HandleFunc("/api/q/users", s.GetUsers)
+	router.HandleFunc("/login", s.Login).Methods("POST")
 	addr := strings.Join([]string{"127.0.0.1", cfg.Section("").Key("port").String()}, ":")
 	srv := &http.Server{
 		Handler:      router,

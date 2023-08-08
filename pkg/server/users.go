@@ -1,6 +1,8 @@
 package server
 
 import (
+	"crypto/sha256"
+	"encoding/base64"
 	"encoding/json"
 	"net/http"
 	"time"
@@ -8,10 +10,17 @@ import (
 	"github.com/hoomanist/allegro-server/pkg/database"
 )
 
+func Hash(bv []byte) string {
+	hasher := sha256.New()
+	hasher.Write(bv)
+	return base64.URLEncoding.EncodeToString(hasher.Sum(nil))
+}
+
 func (s *server) NewUser(w http.ResponseWriter, r *http.Request) {
 	var m database.User
 	json.NewDecoder(r.Body).Decode(&m)
 	m.CreationDate = time.Now()
+	m.Password = Hash([]byte(m.Password))
 	err := database.NewUser(s.SqlCfg, m)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
