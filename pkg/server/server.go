@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/gorilla/mux"
+	"github.com/hoomanist/allegro-server/pkg/auth"
 	"gopkg.in/ini.v1"
 )
 
@@ -29,7 +30,7 @@ func Serve(cfg *ini.File) {
 	router.HandleFunc("/api/ping", s.IsAlive)
 	router.HandleFunc("/api/q/composers", s.ListComposers)
 	router.HandleFunc("/api/new/composer", s.NewComposer).Methods("POST")
-	router.HandleFunc("/upload", s.FileUpload).Methods("POST")
+	router.HandleFunc("/upload", auth.Authorize(s.FileUpload, s.Key)).Methods("POST")
 	router.HandleFunc("/api/new/user", s.NewUser).Methods("POST")
 	router.HandleFunc("/api/q/users", s.GetUsers)
 	router.HandleFunc("/login", s.Login).Methods("POST")

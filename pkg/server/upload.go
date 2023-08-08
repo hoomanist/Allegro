@@ -9,6 +9,7 @@ import (
 	"path/filepath"
 	"time"
 
+	"github.com/hoomanist/allegro-server/pkg/auth"
 	"github.com/hoomanist/allegro-server/pkg/database"
 )
 
@@ -18,12 +19,13 @@ type Progress struct {
 	TotalSize int64
 	BytesRead int64
 	FileName  string
+	User      string
 }
 
 func (pr *Progress) Print() {
 	if pr.BytesRead == pr.TotalSize {
 		//ToDo: write this to a logging database
-		fmt.Printf("%s is Uploaded!", pr.FileName)
+		fmt.Printf("%s is Uploaded by %s!", pr.FileName, pr.User)
 		return
 	}
 	// fmt.Printf("File Upload in progress: %d\n", pr.BytesRead)
@@ -78,9 +80,15 @@ func (s *server) FileUpload(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		defer f.Close()
+		username, err := auth.ExtractClaims(w, r, s.Key)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusUnauthorized)
+			return
+		}
 		pr := &Progress{
 			TotalSize: fileHeader.Size,
 			FileName:  fpath,
+			User:      username,
 		}
 		_, err = io.Copy(f, io.TeeReader(file, pr))
 		if err != nil {
