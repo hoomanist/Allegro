@@ -11,6 +11,7 @@ import (
 type Composer struct {
 	Id            int    `json:"id"`
 	Composer_name string `json:"name"`
+    Photo string `json:"photo"`
 	Description   string `json:"desc"`
 	Birth         int    `json:"birth"`
 	Death         int    `json:"death"`
@@ -32,16 +33,18 @@ func ListComposers(SqlCfg *ini.Section) ([]Composer, error) {
 			birth int
 			death int
 
+            photo string
 			name        string
 			description string
 		)
-		err = rows.Scan(&id, &name, &description, &birth, &death)
+		err = rows.Scan(&id, &name, &photo, &description, &birth, &death)
 		if err != nil {
 			return nil, err
 		}
 		composers = append(composers, Composer{
 			Id:            id,
 			Composer_name: name,
+            Photo:         photo,
 			Description:   description,
 			Birth:         birth,
 			Death:         death,
@@ -56,8 +59,8 @@ func NewComposer(SqlCfg *ini.Section, composer *Composer) error {
 		log.Println("hallo")
 		return err
 	}
-	cmd := fmt.Sprintf("INSERT INTO composers (composer_name, description, birth, death) VALUES ('%s', '%s', '%d', '%d');",
-		composer.Composer_name, composer.Description, composer.Birth, composer.Death)
+	cmd := fmt.Sprintf("INSERT INTO composers (composer_name, photo, description, birth, death) VALUES ('%s','%s', '%s', '%d', '%d');",
+		composer.Composer_name, composer.Photo, composer.Description, composer.Birth, composer.Death)
 
 	_, err = db.Exec(cmd)
 	if err != nil {
