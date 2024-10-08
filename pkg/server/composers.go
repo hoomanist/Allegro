@@ -13,7 +13,7 @@ func (s *server) NewComposer(w http.ResponseWriter, r *http.Request) {
 	var m database.Composer
 	fmt.Println(r.Body)
 	json.NewDecoder(r.Body).Decode(&m)
-	err := database.NewComposer(s.SqlCfg, &m)
+	err := database.NewComposer(&m)
 	log.Println(err)
 	if err != nil {
 		w.WriteHeader(http.StatusNotModified)
@@ -28,7 +28,7 @@ func (s *server) NewComposer(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *server) ListComposers(w http.ResponseWriter, r *http.Request) {
-	composers, err := database.ListComposers(s.SqlCfg)
+	composers, err := database.ListComposers()
 	if err != nil {
 		json.NewEncoder(w).Encode(map[string]string{
 			"error": err.Error(),

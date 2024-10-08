@@ -4,30 +4,28 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
+	"os"
 	"strings"
 	"time"
 
 	"github.com/gorilla/mux"
 	"github.com/hoomanist/allegro-server/pkg/auth"
-	"gopkg.in/ini.v1"
 )
 
 type server struct {
-	SqlCfg *ini.Section
-	Key    string
+	Key string
 }
 
 func (s *server) IsAlive(w http.ResponseWriter, r *http.Request) {
-    log.Println("Hallo from client")
+	log.Println("Hallo from client")
 	json.NewEncoder(w).Encode(map[string]bool{"ok": true})
 }
 
-func Serve(cfg *ini.File) {
+func Serve() {
 	router := mux.NewRouter()
-    router.Use(mux.CORSMethodMiddleware(router))
+	router.Use(mux.CORSMethodMiddleware(router))
 	s := server{
-		SqlCfg: cfg.Section("DB"),
-		Key:    cfg.Section("").Key("encryption_key").String(),
+		Key: os.Getenv("encryption_key"),
 	}
 	router.HandleFunc("/api/ping", s.IsAlive)
 	router.HandleFunc("/api/q/composers", s.ListComposers)
@@ -36,11 +34,10 @@ func Serve(cfg *ini.File) {
 	router.HandleFunc("/api/new/user", s.NewUser).Methods("POST")
 	router.HandleFunc("/api/q/users", s.GetUsers)
 	router.HandleFunc("/login", s.Login).Methods("POST")
-    router.PathPrefix("/static/").Handler(http.StripPrefix("/static/",
-                                    http.FileServer(http.Dir("./uploads"))))
+	router.PathPrefix("/static/").Handler(http.StripPrefix("/static/",
+		http.FileServer(http.Dir("./uploads"))))
 
-
-	addr := strings.Join([]string{"127.0.0.1", cfg.Section("").Key("port").String()}, ":")
+	addr := strings.Join([]string{"127.0.0.1", os.Getenv("port")}, ":")
 	srv := &http.Server{
 		Handler:      router,
 		Addr:         addr,
@@ -48,6 +45,6 @@ func Serve(cfg *ini.File) {
 		ReadTimeout:  15 * time.Second,
 	}
 	log.Printf("start serving at %s \n", addr)
-    
+
 	log.Fatal(srv.ListenAndServe())
 }

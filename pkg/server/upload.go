@@ -99,7 +99,7 @@ func (s *server) FileUpload(w http.ResponseWriter, r *http.Request) {
 			Filepath:   fpath,
 			Uploadtime: t,
 		}
-		err = database.NewFile(s.SqlCfg, db_entry)
+		err = database.NewFile(db_entry)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 		}

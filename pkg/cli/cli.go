@@ -11,12 +11,10 @@ import (
 )
 
 type ServeCommand struct {
-	config string
-	fs     *flag.FlagSet
+	fs *flag.FlagSet
 }
 type MigrateCommand struct {
-	fs     *flag.FlagSet
-	config string
+	fs *flag.FlagSet
 }
 
 type Runner interface {
@@ -32,7 +30,6 @@ func NewServeCommand() *ServeCommand {
 			flag.ContinueOnError,
 		),
 	}
-	sc.fs.StringVar(&sc.config, "cfg", "./config.ini", "what is the config ?")
 	return sc
 }
 
@@ -43,7 +40,6 @@ func NewMigrateCommand() *MigrateCommand {
 			flag.ContinueOnError,
 		),
 	}
-	mc.fs.StringVar(&mc.config, "cfg", "./config.ini", "what is the config?")
 	return mc
 }
 
@@ -51,8 +47,7 @@ func (mc *MigrateCommand) Name() string {
 	return mc.fs.Name()
 }
 func (mc *MigrateCommand) Run() error {
-	c := Configure(mc.config)
-	return database.Migrate(c.Section("database"))
+	return database.Migrate()
 }
 func (mc *MigrateCommand) Init(args []string) error {
 	return mc.fs.Parse(args)
@@ -62,8 +57,8 @@ func (sc *ServeCommand) Name() string {
 	return sc.fs.Name()
 }
 func (sc *ServeCommand) Run() error {
-	c := Configure(sc.config)
-	server.Serve(c)
+	fmt.Println(os.Getenv("port"))
+	server.Serve()
 	return nil
 }
 func (sc *ServeCommand) Init(args []string) error {

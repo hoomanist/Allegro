@@ -21,7 +21,7 @@ func (s *server) NewUser(w http.ResponseWriter, r *http.Request) {
 	json.NewDecoder(r.Body).Decode(&m)
 	m.CreationDate = time.Now()
 	m.Password = Hash([]byte(m.Password))
-	err := database.NewUser(s.SqlCfg, m)
+	err := database.NewUser(m)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -32,7 +32,7 @@ func (s *server) NewUser(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *server) GetUsers(w http.ResponseWriter, r *http.Request) {
-	users, err := database.GetUsers(s.SqlCfg)
+	users, err := database.GetUsers()
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return

@@ -3,9 +3,8 @@ package database
 import (
 	"database/sql"
 	"log"
+	"os"
 	"time"
-
-	"gopkg.in/ini.v1"
 )
 
 type File struct {
@@ -13,8 +12,8 @@ type File struct {
 	Filepath   string
 }
 
-func NewFile(SqlCfg *ini.Section, file *File) error {
-	db, err := sql.Open("postgres", SqlCfg.Key("URI").String())
+func NewFile(file *File) error {
+	db, err := sql.Open("postgres", os.Getenv("URI"))
 	if err != nil {
 		log.Println(err)
 		return err

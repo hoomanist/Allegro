@@ -2,10 +2,10 @@ package database
 
 import (
 	"database/sql"
+	"fmt"
 	"log"
+	"os"
 	"time"
-
-	"gopkg.in/ini.v1"
 )
 
 type User struct {
@@ -15,8 +15,8 @@ type User struct {
 	Password     string    `json:"password"`
 }
 
-func NewUser(SqlCfg *ini.Section, user User) error {
-	db, err := sql.Open("postgres", SqlCfg.Key("URI").String())
+func NewUser(user User) error {
+	db, err := sql.Open("postgres", os.Getenv("URI"))
 	if err != nil {
 		log.Println(err)
 		return err
@@ -32,8 +32,8 @@ func NewUser(SqlCfg *ini.Section, user User) error {
 	return nil
 }
 
-func GetUser(SqlCfg *ini.Section, name string) (string, error) {
-	db, err := sql.Open("postgres", SqlCfg.Key("URI").String())
+func GetUser(name string) (string, error) {
+	db, err := sql.Open("postgres", os.Getenv("URI"))
 	if err != nil {
 		log.Println(err)
 		return "", err
@@ -42,14 +42,15 @@ func GetUser(SqlCfg *ini.Section, name string) (string, error) {
 	row := db.QueryRow("SELECT password FROM users WHERE name=$1", name)
 	err = row.Scan(&password)
 	if err != nil {
+		fmt.Println("Hoo")
 		return "", err
 	}
 	return password, nil
 }
 
 // only exists for testing purposes
-func GetUsers(SqlCfg *ini.Section) ([]User, error) {
-	db, err := sql.Open("postgres", SqlCfg.Key("URI").String())
+func GetUsers() ([]User, error) {
+	db, err := sql.Open("postgres", os.Getenv("URI"))
 	if err != nil {
 		log.Println(err)
 		return nil, err

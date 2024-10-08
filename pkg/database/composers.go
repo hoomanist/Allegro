@@ -4,21 +4,20 @@ import (
 	"database/sql"
 	"fmt"
 	"log"
-
-	"gopkg.in/ini.v1"
+	"os"
 )
 
 type Composer struct {
 	Id            int    `json:"id"`
 	Composer_name string `json:"name"`
-    Photo string `json:"photo"`
+	Photo         string `json:"photo"`
 	Description   string `json:"desc"`
 	Birth         int    `json:"birth"`
 	Death         int    `json:"death"`
 }
 
-func ListComposers(SqlCfg *ini.Section) ([]Composer, error) {
-	db, err := sql.Open("postgres", SqlCfg.Key("URI").String())
+func ListComposers() ([]Composer, error) {
+	db, err := sql.Open("postgres", os.Getenv("URI"))
 	if err != nil {
 		return nil, err
 	}
@@ -33,7 +32,7 @@ func ListComposers(SqlCfg *ini.Section) ([]Composer, error) {
 			birth int
 			death int
 
-            photo string
+			photo       string
 			name        string
 			description string
 		)
@@ -44,7 +43,7 @@ func ListComposers(SqlCfg *ini.Section) ([]Composer, error) {
 		composers = append(composers, Composer{
 			Id:            id,
 			Composer_name: name,
-            Photo:         photo,
+			Photo:         photo,
 			Description:   description,
 			Birth:         birth,
 			Death:         death,
@@ -53,8 +52,8 @@ func ListComposers(SqlCfg *ini.Section) ([]Composer, error) {
 	return composers, nil
 }
 
-func NewComposer(SqlCfg *ini.Section, composer *Composer) error {
-	db, err := sql.Open("postgres", SqlCfg.Key("URI").String())
+func NewComposer(composer *Composer) error {
+	db, err := sql.Open("postgres", os.Getenv("URI"))
 	if err != nil {
 		log.Println("hallo")
 		return err
